@@ -1,0 +1,29 @@
+name: Build charts
+on:
+  push:
+    paths:
+      - 'data/**'
+      - 'scripts/**'
+      - 'requirements.txt'
+      - 'README.md'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --upgrade pip
+      - run: pip install -r requirements.txt
+      - run: python scripts/fetch_price_data.py
+      - run: python scripts/plot_price_trends.py --years 5
+      - run: python scripts/predict_prices.py --years_back 5 --years_ahead 2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: outputs
+          path: |
+            charts
+            data/processed
